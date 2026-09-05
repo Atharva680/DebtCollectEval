@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python environment
+.venv/
+venv/
+env/
+.env
+
+# IDEs
+.vscode/
+.idea/
+
+# Local results (optional, but usually kept if required for submission)
+# results/raw_results*
+# results/metrics.json
+
+# Pytest
+.pytest_cache/

@@ -1,0 +1,242 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DebtCollect Eval | AI Performance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .accent-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            transition: all 0.3s ease;
+            border-color: #6366f1;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div>
+            <h1 class="text-4xl font-bold tracking-tight text-white">
+                <span class="text-indigo-500">DebtCollect</span> Eval <span class="text-sm font-mono bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded ml-2">v1.0.0</span>
+            </h1>
+            <p class="text-slate-400 mt-2">Cross-Linguistic Tool-Call Reliability Harness</p>
+        </div>
+        <div class="flex gap-4">
+            <div class="glass px-4 py-2 rounded-lg flex items-center gap-3">
+                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="text-sm font-medium">Ollama Engine: <span class="text-indigo-400">ONLINE</span></span>
+            </div>
+            <button class="accent-gradient px-6 py-2 rounded-lg font-semibold text-white hover:opacity-90 transition-all shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid fa-play mr-2"></i> Run New Eval
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-12 gap-6">
+        
+        <!-- Top KPI Row -->
+        <div class="col-span-12 grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+            <div class="glass p-6 rounded-2xl card-hover">
+                <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Overall Accuracy</p>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <h2 class="text-4xl font-bold text-white">84.2%</h2>
+                    <span class="text-green-400 text-sm font-bold"><i class="fa-solid fa-caret-up"></i> 2.1%</span>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl card-hover border-l-4 border-indigo-500">
+                <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Indic-English Delta</p>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <h2 class="text-4xl font-bold text-white">-12.4%</h2>
+                    <span class="text-slate-500 text-sm font-medium">Gap</span>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl card-hover">
+                <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Malformed Args Rate</p>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <h2 class="text-4xl font-bold text-white">5.8%</h2>
+                    <span class="text-indigo-400 text-sm font-medium">Critical</span>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl card-hover">
+                <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Total Cases Processed</p>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <h2 class="text-4xl font-bold text-white">210</h2>
+                    <span class="text-slate-500 text-sm font-medium">Samples</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Graphics Row -->
+        <div class="col-span-12 lg:col-span-8 glass p-6 rounded-3xl shadow-2xl">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-semibold text-white">Accuracy by Language</h3>
+                <select class="bg-slate-800 text-sm border border-slate-700 rounded-md px-3 py-1 text-slate-300 outline-none">
+                    <option>Qwen-2.5-0.5B</option>
+                    <option>Qwen-2.5-7B</option>
+                    <option>Baseline API</option>
+                </select>
+            </div>
+            <div class="h-80">
+                <canvas id="accuracyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Error Taxonomy -->
+        <div class="col-span-12 lg:col-span-4 glass p-6 rounded-3xl shadow-2xl">
+            <h3 class="text-xl font-semibold text-white mb-6">Error Taxonomy</h3>
+            <div class="space-y-6">
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-slate-300">Wrong Tool Selection</span>
+                        <span class="text-indigo-400 font-bold">42%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-500 h-full" style="width: 42%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-slate-300">Malformed Arguments</span>
+                        <span class="text-purple-400 font-bold">31%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div class="bg-purple-500 h-full" style="width: 31%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-slate-300">Missed Call</span>
+                        <span class="text-pink-400 font-bold">18%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div class="bg-pink-500 h-full" style="width: 18%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-slate-300">Spurious Call</span>
+                        <span class="text-blue-400 font-bold">9%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div class="bg-blue-500 h-full" style="width: 9%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-10 p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                <p class="text-xs text-indigo-300 leading-relaxed">
+                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    <strong>Insight:</strong> The majority of failures in Marathi are concentrated in argument-level precision, particularly with date parsing.
+                </p>
+            </div>
+        </div>
+
+        <!-- Case Inspector Table -->
+        <div class="col-span-12 glass rounded-3xl shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-white">Case-Level Inspection</h3>
+                <div class="flex gap-2">
+                    <button class="text-xs bg-slate-700 px-3 py-1 rounded hover:bg-slate-600 transition">Export JSON</button>
+                    <button class="text-xs bg-slate-700 px-3 py-1 rounded hover:bg-slate-600 transition">Filter Fails</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-widest">
+                            <th class="p-4 font-medium">Case ID</th>
+                            <th class="p-4 font-medium">Language</th>
+                            <th class="p-4 font-medium">Borrower Utterance</th>
+                            <th class="p-4 font-medium">Expected Tool</th>
+                            <th class="p-4 font-medium">Actual Tool</th>
+                            <th class="p-4 font-medium">Result</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-slate-700">
+                        <tr class="hover:bg-slate-700/30 transition">
+                            <td class="p-4 mono text-indigo-400">#102</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">English</span></td>
+                            <td class="p-4 text-slate-300 italic">"I'll pay by next Monday"</td>
+                            <td class="p-4 mono text-xs">capture_ptp</td>
+                            <td class="p-4 mono text-xs">capture_ptp</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-bold">PASS</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-700/30 transition">
+                            <td class="p-4 mono text-indigo-400">#145</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs">Hinglish</span></td>
+                            <td class="p-4 text-slate-300 italic">"Payment kal kar dunga"</td>
+                            <td class="p-4 mono text-xs">capture_ptp</td>
+                            <td class="p-4 mono text-xs">log_disposition</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-bold">FAIL</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-700/30 transition">
+                            <td class="p-4 mono text-indigo-400">#189</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-orange-500/20 text-orange-300 rounded text-xs">Marathi</span></td>
+                            <td class="p-4 text-slate-300 italic">"मी पैसे भरले आहेत"</td>
+                            <td class="p-4 mono text-xs">mark_dispute</td>
+                            <td class="p-4 mono text-xs">mark_dispute</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-bold">PASS</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const ctx = document.getElementById('accuracyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['English', 'Hinglish', 'Marathi'],
+                datasets: [{
+                    label: 'Accuracy %',
+                    data: [94.5, 81.2, 72.8],
+                    backgroundColor: ['#6366f1', '#a855f7', '#ec4899'],
+                    borderRadius: 12,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { weight: '600' } }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
